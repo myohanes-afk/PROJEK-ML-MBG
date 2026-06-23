@@ -23,7 +23,7 @@ Original file is located at
 """
 
 # Install library yang diperlukan
-!pip install nltk sastrawi pandas numpy scikit-learn matplotlib seaborn wordcloud plotly -q
+#!pip install nltk sastrawi pandas numpy scikit-learn matplotlib seaborn wordcloud plotly -q
 
 import pandas as pd
 import numpy as np
