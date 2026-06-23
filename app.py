@@ -16,11 +16,18 @@ st.set_page_config(page_title="Analisis Sentimen MBG", page_icon="🍽️", layo
 st.title("🍽️ Aplikasi Analisis Sentimen Program Makan Bergizi Gratis")
 st.write("Aplikasi ini memprediksi sentimen masyarakat menggunakan model Support Vector Machine (SVM).")
 
-# Load Model Pipeline (Otomatis memuat TF-IDF dan SVM)
+# 1. Load Model Pipeline
 @st.cache_resource
 def load_model():
     with open('svm_tuned_mbg.pkl', 'rb') as f:
-        model = pickle.load(f)
+        loaded_object = pickle.load(f)
+    
+    # JIKA model dibungkus oleh GridSearchCV/RandomizedSearchCV, ambil estimator terbaiknya
+    if hasattr(loaded_object, 'best_estimator_'):
+        model = loaded_object.best_estimator_
+    else:
+        model = loaded_object
+        
     return model
 
 try:
