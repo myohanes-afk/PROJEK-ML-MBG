@@ -90,9 +90,10 @@ print('✅ Semua library berhasil diimport!')
 # ─────────────────────────────────────────────────────────────
 # OPSI B: Load dari Google Drive
 # ─────────────────────────────────────────────────────────────
-from google.colab import drive
-drive.mount('/content/drive')
-df_raw = pd.read_csv('/content/drive/MyDrive/SEMESTER 2/MACHINE LEARNING/data_mbg_gabungan.csv')
+#from google.colab import drive
+#drive.mount('/content/drive')
+#df_raw = pd.read_csv('/content/drive/MyDrive/SEMESTER 2/MACHINE LEARNING/data_mbg_gabungan.csv')
+df_raw = pd.read_csv('data_mbg_gabungan.csv')
 
 # ─────────────────────────────────────────────────────────────
 # OPSI C: Load dari path lokal (jika sudah di-upload ke Colab)
