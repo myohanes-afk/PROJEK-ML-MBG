@@ -22,11 +22,23 @@ def load_model():
     with open('svm_tuned_mbg.pkl', 'rb') as f:
         loaded_object = pickle.load(f)
     
-    # JIKA model dibungkus oleh GridSearchCV/RandomizedSearchCV, ambil estimator terbaiknya
+    # Ambil estimator terbaik jika dibungkus GridSearchCV/RandomizedSearchCV
     if hasattr(loaded_object, 'best_estimator_'):
         model = loaded_object.best_estimator_
     else:
         model = loaded_object
+        
+    # 🔥 BYPASS BUG SVM SPARSE MATRIX:
+    # Kita paksa inisialisasi ulang atribut probability ke model SVM di dalam pipeline
+    try:
+        # Mengakses step terakhir dari pipeline (yaitu model SVM-nya)
+        svm_model = model.steps[-1][1]
+        
+        # Jika model SVM menggunakan probability=True, kita suntikkan atribut yang hilang
+        if getattr(svm_model, 'probability', False):
+            svm_model._effective_probability = True
+    except Exception:
+        pass # Lewati jika struktur pipeline berbeda
         
     return model
 
