@@ -16,29 +16,15 @@ st.set_page_config(page_title="Analisis Sentimen MBG", page_icon="🍽️", layo
 st.title("🍽️ Aplikasi Analisis Sentimen Program Makan Bergizi Gratis")
 st.write("Aplikasi ini memprediksi sentimen masyarakat menggunakan model Support Vector Machine (SVM).")
 
-# 1. Load Model Pipeline
 @st.cache_resource
 def load_model():
     with open('svm_tuned_mbg.pkl', 'rb') as f:
         loaded_object = pickle.load(f)
     
-    # Ambil estimator terbaik jika dibungkus GridSearchCV/RandomizedSearchCV
     if hasattr(loaded_object, 'best_estimator_'):
         model = loaded_object.best_estimator_
     else:
         model = loaded_object
-        
-    # 🔥 BYPASS BUG SVM SPARSE MATRIX:
-    # Kita paksa inisialisasi ulang atribut probability ke model SVM di dalam pipeline
-    try:
-        # Mengakses step terakhir dari pipeline (yaitu model SVM-nya)
-        svm_model = model.steps[-1][1]
-        
-        # Jika model SVM menggunakan probability=True, kita suntikkan atribut yang hilang
-        if getattr(svm_model, 'probability', False):
-            svm_model._effective_probability = True
-    except Exception:
-        pass # Lewati jika struktur pipeline berbeda
         
     return model
 
@@ -53,18 +39,27 @@ try:
             cleaned_tweet = re.sub(r'http\S+|www\.\S+', '', user_tweet)
             cleaned_tweet = re.sub(r'@\w+', '', cleaned_tweet)
             cleaned_tweet = cleaned_tweet.lower()
-
-            # Prediksi langsung menggunakan model pipeline
-            prediction = model_pipeline.predict([cleaned_tweet])[0]
-
+            
+            # 🔥 BYPASS AMAN: Menggunakan predict_proba untuk menghindari bug .predict()
+            # Mendapatkan skor probabilitas untuk setiap kelas sentimen
+            proba = model_pipeline.predict_proba([cleaned_tweet])[0]
+            
+            # Mengambil index kelas dengan nilai probabilitas tertinggi
+            import numpy as np
+            best_class_idx = np.argmax(proba)
+            
+            # Ambil daftar nama kelas sentimen asli dari model kamu
+            classes = model_pipeline.classes_
+            prediction = classes[best_class_idx]
+            
             # Tampilkan hasil
             st.subheader("Hasil Analisis:")
             if prediction == 'Positif':
-                st.success(f"Sentimen: **{prediction}** 😊🟢")
+                st.success(f"Sentimen: **{prediction}** 😊🟢 (Keyakinan: {proba[best_class_idx]*100:.2f}%)")
             elif prediction == 'Negatif':
-                st.error(f"Sentimen: **{prediction}** 😡🔴")
+                st.error(f"Sentimen: **{prediction}** 😡🔴 (Keyakinan: {proba[best_class_idx]*100:.2f}%)")
             else:
-                st.warning(f"Sentimen: **{prediction}** 😐🟡")
+                st.warning(f"Sentimen: **{prediction}** 😐🟡 (Keyakinan: {proba[best_class_idx]*100:.2f}%)")
         else:
             st.error("Silakan masukkan teks terlebih dahulu!")
 
