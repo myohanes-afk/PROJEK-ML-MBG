@@ -1003,7 +1003,7 @@ Kedua hasil kemudian dibandingkan secara head-to-head terhadap baseline SVM.
 """
 
 # Install Optuna (hanya perlu dijalankan sekali)
-!pip install optuna -q
+#!pip install optuna -q
 print('✅ Optuna siap')
 
 """### 8.1 Tuning dengan RandomizedSearchCV"""
